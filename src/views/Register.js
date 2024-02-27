@@ -8,6 +8,7 @@ import {
   View,
   Image,
 } from "react-native";
+import { getDatabase, ref, set } from "firebase/database";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import firebaseAuth from "../firebase/config";
 import { Ionicons } from "@expo/vector-icons";
@@ -20,8 +21,20 @@ export default function Register() {
 
   const doRegister = () => {
     createUserWithEmailAndPassword(firebaseAuth, email, password)
-      .then(() => {
-        // Registro bem-sucedido, você pode redirecionar ou fazer algo aqui
+      .then((userCredential) => {
+        // Registro bem-sucedido
+        const user = userCredential.user;
+        const userId = user.uid; // ID único do usuário
+  
+        // Armazene o nome do usuário no Realtime Database
+        const db = getDatabase();
+        set(ref(db, `users/${userId}/name`), name)
+          .then(() => {
+            // Nome armazenado com sucesso
+          })
+          .catch((error) => {
+            console.error("Erro ao armazenar o nome do usuário:", error);
+          });
       })
       .catch((error) => {
         const errorMessage = error.message;
